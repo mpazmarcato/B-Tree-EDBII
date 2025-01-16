@@ -13,6 +13,8 @@ class Node {
 
     private:
         
+        int order; ///< Ordem da árvore
+        const int MAX_PRODUCTS = 2 * order;  ///< Número máximo de produtos por nó
         std::vector<Product> products;   ///< Vetor de produtos
         int depth;  ///< Profundidade do nó na árvore  
         Node *parent;  ///< Ponteiro para o nó pai
@@ -24,8 +26,9 @@ class Node {
          * @brief Construtor da classe Node/produto
          * @param id Identificador do nó/ID do produto
          */
-        Node(int id) {
+        Node(int id, int order) {
             this->products.push_back(Product(id));
+            this->order = order;
             this->depth = 0;
             this->parent = nullptr;
         }

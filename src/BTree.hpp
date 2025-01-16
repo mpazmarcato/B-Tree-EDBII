@@ -25,7 +25,7 @@ class BTree {
         BTree(int order) {
             this->order = order;
             this->root = nullptr;
-            this->sentinel = new Node(-1);
+            this->sentinel = new Node(0, order);
         }
 
         /**
@@ -38,12 +38,6 @@ class BTree {
          * @return Ordem da árvore
          */
         int getOrder() {return this->order;}
-
-        /**
-         * @brief Método que define a ordem da árvore
-         * @param order Ordem da árvore
-         */
-        void setOrder(int order) {this->order = order;}
 
         /**
          * @brief Método que retorna o ponteiro para a raiz da árvore
