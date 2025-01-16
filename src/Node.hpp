@@ -2,20 +2,21 @@
 #define NODE_HPP
 
 #include <string>
+#include <vector>
+#include "Product.hpp"
 
 /**
- * @class Classe Node/produto
- * @brief Uma classe que representa um nó de uma árvore B/produto do gerenciador de estoque
+ * @class Classe Node
+ * @brief Uma classe que representa um nó de uma árvore B gerenciadora de estoque
  */
 class Node {
 
     private:
         
-        int id; ///< Identificador do nó/ID do produto
-        std::string name;   ///< Nome do produto
-        int stock;  ///< Quantidade em estoque
+        std::vector<Product> products;   ///< Vetor de produtos
         int depth;  ///< Profundidade do nó na árvore  
         Node *parent;  ///< Ponteiro para o nó pai
+        
 
     public:
 
@@ -24,9 +25,7 @@ class Node {
          * @param id Identificador do nó/ID do produto
          */
         Node(int id) {
-            this->id = id;
-            this->name = "";
-            this->stock = 0;
+            this->products.push_back(Product(id));
             this->depth = 0;
             this->parent = nullptr;
         }
@@ -37,41 +36,57 @@ class Node {
         ~Node() = default;
 
         /**
-         * @brief Método que retorna o identificador do nó/ID do produto
-         * @return Identificador do nó/ID do produto
-         */
-        int getId() {return this->id;}
-
-        /**
-         * @brief Método que define o identificador do nó/ID do produto
-         * @param id Identificador do nó/ID do produto
-         */
-        void setId(int id) {this->id = id;}
-
-        /**
          * @brief Método que retorna o nome do produto
+         * @param id ID do produto
          * @return Nome do produto
          */
-        std::string getName() {return this->name;}
+        std::string getName(int id) {
+            for (Product product : this->products) {
+                if (product.getId() == id) {
+                    return product.getName();
+                }
+            }
+        }
 
         /**
          * @brief Método que define o nome do produto
          * @param name Nome do produto
+         * @param id ID do produto
          */
-        void setName(std::string name) {this->name = name;}
+        void setName(std::string name, int id) {
+            for (Product &product : this->products) {
+                if (product.getId() == id) {
+                    product.setName(name);
+                }
+            }
+        }
 
         /**
          * @brief Método que retorna a quantidade em estoque
+         * @param id ID do produto
          * @return Quantidade em estoque
          */
-        int getStock() {return this->stock;}
+        int getStock(int id) {
+            for (Product product : this->products) {
+                if (product.getId() == id) {
+                    return product.getStock();
+                }
+            }
+        }
 
 
         /**
          * @brief Método que define a quantidade em estoque
          * @param stock Quantidade em estoque
+         * @param id ID do produto
          */
-        void setStock(int stock) {this->stock = stock;}
+        void setStock(int stock, int id) {
+            for (Product &product : this->products) {
+                if (product.getId() == id) {
+                    product.setStock(stock);
+                }
+            }
+        }
 
         /**
          * @brief Método que retorna a profundidade do nó na árvore
