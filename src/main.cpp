@@ -15,4 +15,5 @@ int main() {
     btree->getSentinel()->setName("Sentinela", id); 
     delete btree;
     return 0;
+
 }

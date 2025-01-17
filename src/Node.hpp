@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include "Product.hpp"
 
 /**
  * @class Classe Node
@@ -13,6 +12,37 @@ class Node {
 
     private:
         
+        struct Product {
+
+            int id; ///< ID do produto
+            std::string name;   ///< Nome do produto
+            int stock;  ///< Quantidade em estoque
+
+            /**
+             * @brief Construtor da classe Product
+             * @param id ID do produto
+             */
+            Product(int id) {
+                this->id = id;
+                this->name = "";
+                this->stock = 0;
+            }
+
+            /**
+             * @overload overload do construtor da classe Product
+             * @brief Construtor da classe Product
+             * @param id ID do produto
+             * @param name Nome do produto
+             * @param stock Quantidade em estoque
+             */
+            Product(int id, std::string name, int stock) {
+                this->id = id;
+                this->name = name;
+                this->stock = stock;
+            }
+
+        };
+
         int order; ///< Ordem da árvore
         const int MAX_PRODUCTS = 2 * order;  ///< Número máximo de produtos por nó
         std::vector<Product> products;   ///< Vetor de produtos
@@ -45,8 +75,8 @@ class Node {
          */
         std::string getName(int id) {
             for (Product product : this->products) {
-                if (product.getId() == id) {
-                    return product.getName();
+                if (product.id == id) {
+                    return product.name;
                 }
             }
         }
@@ -58,8 +88,8 @@ class Node {
          */
         void setName(std::string name, int id) {
             for (Product &product : this->products) {
-                if (product.getId() == id) {
-                    product.setName(name);
+                if (product.id == id) {
+                    product.name = name;
                 }
             }
         }
@@ -71,8 +101,8 @@ class Node {
          */
         int getStock(int id) {
             for (Product product : this->products) {
-                if (product.getId() == id) {
-                    return product.getStock();
+                if (product.id == id) {
+                    return product.stock;
                 }
             }
         }
@@ -85,8 +115,8 @@ class Node {
          */
         void setStock(int stock, int id) {
             for (Product &product : this->products) {
-                if (product.getId() == id) {
-                    product.setStock(stock);
+                if (product.id == id) {
+                    product.stock = stock;
                 }
             }
         }
