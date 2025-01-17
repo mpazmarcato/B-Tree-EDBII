@@ -10,7 +10,7 @@
  */
 class Node {
 
-    private:
+    public:
         
         struct Product {
 
@@ -44,23 +44,24 @@ class Node {
         };
 
         int order; ///< Ordem da árvore
-        const int MAX_PRODUCTS = 2 * order;  ///< Número máximo de produtos por nó
+        const int MAX_PRODUCTS = 2 * order - 1;  ///< Número máximo de produtos por nó
+        const int MAX_CHILDREN = 2 * order;  ///< Número máximo de filhos por nó
         std::vector<Product> products;   ///< Vetor de produtos
         int depth;  ///< Profundidade do nó na árvore  
         Node *parent;  ///< Ponteiro para o nó pai
+        std::vector<Node *> children;   ///< Vetor de ponteiros para os filhos
         
-
-    public:
-
         /**
          * @brief Construtor da classe Node/produto
          * @param id Identificador do nó/ID do produto
+         * @param order Ordem da árvore
          */
         Node(int id, int order) {
             this->products.push_back(Product(id));
             this->order = order;
             this->depth = 0;
             this->parent = nullptr;
+            this->children.resize(MAX_CHILDREN, nullptr);
         }
 
         /**
@@ -68,81 +69,6 @@ class Node {
          */
         ~Node() = default;
 
-        /**
-         * @brief Método que retorna o nome do produto
-         * @param id ID do produto
-         * @return Nome do produto
-         */
-        std::string getName(int id) {
-            for (Product product : this->products) {
-                if (product.id == id) {
-                    return product.name;
-                }
-            }
-        }
-
-        /**
-         * @brief Método que define o nome do produto
-         * @param name Nome do produto
-         * @param id ID do produto
-         */
-        void setName(std::string name, int id) {
-            for (Product &product : this->products) {
-                if (product.id == id) {
-                    product.name = name;
-                }
-            }
-        }
-
-        /**
-         * @brief Método que retorna a quantidade em estoque
-         * @param id ID do produto
-         * @return Quantidade em estoque
-         */
-        int getStock(int id) {
-            for (Product product : this->products) {
-                if (product.id == id) {
-                    return product.stock;
-                }
-            }
-        }
-
-
-        /**
-         * @brief Método que define a quantidade em estoque
-         * @param stock Quantidade em estoque
-         * @param id ID do produto
-         */
-        void setStock(int stock, int id) {
-            for (Product &product : this->products) {
-                if (product.id == id) {
-                    product.stock = stock;
-                }
-            }
-        }
-
-        /**
-         * @brief Método que retorna a profundidade do nó na árvore
-         * @return Profundidade do nó na árvore
-         */
-        int getDepth() {return this->depth;}
-
-        /**
-         * @brief Método que define a profundidade do nó na árvore
-         * @param depth Profundidade do nó na árvore
-         */
-        void setDepth(int depth) {this->depth = depth;}
-
-        /**
-         * @brief Método que retorna o nó pai
-         * @return Nó pai
-         */
-        Node *getParent() {return this->parent;}
-
-        /**
-         * @brief Método que define o nó pai
-         */
-        void setParent(Node *parent) {this->parent = parent;}
 
 };
 
