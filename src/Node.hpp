@@ -56,8 +56,8 @@ class Node {
          * @param id Identificador do nó/ID do produto
          * @param order Ordem da árvore
          */
-        Node(int id, int order) {
-            this->products.push_back(Product(id));
+        Node(Product Product, int order) {
+            this->products.push_back(Product);
             this->order = order;
             this->depth = 0;
             this->parent = nullptr;

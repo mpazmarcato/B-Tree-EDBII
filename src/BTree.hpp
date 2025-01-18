@@ -35,7 +35,23 @@ class BTree {
          * @brief Método que insere um nó na árvore
          * @param node Nó a ser inserido
          */
-        void insert(Node *node);
+        void insert(Node::Product product){
+            
+            // Se a árvore estiver vazia, o nó inserido será a raiz
+            if (this->root == nullptr) {
+                this->root = new Node(product, this->order);
+            } else if (this->root->children.size() == 0) { // Se a raiz não tiver filhos, insere o produto na raiz
+                this->root->products.push_back(product);
+            }// else if (this->root->products.size() == this->root->MAX_PRODUCTS) {
+            //    Node *newRoot = new Node(this->root->products[this->root->order - 1], this->order);
+            //    newRoot->children.push_back(this->root);
+            //    this->root->parent = newRoot;
+            //    this->root = newRoot;
+            //    split(this->root, 0);
+            //} else {
+            //    insertRecursive(this->root, product);
+            //}
+        }
 
         /**
          * @brief Método que busca um nó na árvore

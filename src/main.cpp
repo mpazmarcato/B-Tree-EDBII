@@ -1,4 +1,5 @@
 #include "BTree.hpp"
+#include "Node.hpp"
 
 #include <iostream>
 
@@ -6,13 +7,18 @@
 int main() {
 
     int order;
-    int id;
     std::cout << "Digite a ordem da árvore B: ";
     std::cin >> order;
-    std::cout << "Digite o id do primeiro produto: ";
-    std::cin >> id;
+    Node::Product product(20, "caixa", 10);
     BTree *btree = new BTree(order);
-
+    btree->insert(product);
+    std::cout << btree->search(20)->id << std::endl;
+    std::cout << "Passou o id" << std::endl;
+    std::cout << btree->search(20)->name << std::endl;
+    std::cout << "Passou o nome" << std::endl;
+    std::cout << btree->search(20)->stock << std::endl;
+    std::cout << "Passou o stock" << std::endl;
+    
     delete btree;
     return 0;
 
