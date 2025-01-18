@@ -71,6 +71,11 @@ class BTree {
 
     private: 
         
+        /**
+         * @brief Método que procura um produto na árvore de forma recursiva
+         * @param node Nó a se realizar a busca
+         * @param id Identificador do produto a ser buscado
+         */
         Node::Product* searchRecursive(Node *node, int id) {
             
             if (node == nullptr) {
@@ -89,9 +94,23 @@ class BTree {
                 return searchRecursive(node->children[node->products.size()], id);
             } else {
                 return nullptr;
-            }
-            
+            }    
         }
+
+        /**
+         * @brief Método que insere um produto na árvore de forma recursiva
+         * @param node Nó a ser inserido o produto
+         * @param product Produto a ser inserido
+         */
+        void insertRecursive(Node *node, Node::Product product);
+
+        /**
+         * @brief Método que divide um nó
+         * @param node Nó a ser dividido
+         * @param index Índice do produto a ser promovido
+         */
+        void split(Node *node, int index);
+
 };
 
 #endif
