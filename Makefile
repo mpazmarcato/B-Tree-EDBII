@@ -4,7 +4,7 @@
 # clean => remove o executável.
 
 COMPILER = g++
-FLAGS = -std=c++17 -Wall
+FLAGS = -std=c++17 -Wall -g
 
 SRC = src
 DIST = dist

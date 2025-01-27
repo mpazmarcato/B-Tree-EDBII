@@ -3,6 +3,9 @@
 
 #include "Node.hpp"
 #include <bits/stdc++.h>
+#include <fstream>
+#include <sstream>
+#include <iostream>
 
 /**
  * @class Classe BTree
@@ -33,57 +36,133 @@ public:
         delete root;
     }
 
-        /**
-         * @brief Método que insere um nó na árvore
-         * @param node Nó a ser inserido
-         */
-        void insert(Node::Product product) {
-            if (this->root == nullptr) { // Se a árvore estiver vazia, cria a raiz
-                this->root = new Node(product, this->order);
-            } else {
-                if (this->root->products.size() == this->root->MAX_PRODUCTS) { // Se a raiz estiver cheia, cria uma nova raiz e realiza o split
-                    Node* newRoot = new Node(this->root->products[this->root->order - 1], this->order);
-                    newRoot->children[0] = this->root;
-                    split(newRoot, 0);
-                    this->root = newRoot;
-                }
+    void loadFromFile(const std::string &filename)
+    {
+        std::ifstream file(filename);
+        if (!file.is_open())
+        {
+            std::cerr << "Erro ao abrir o arquivo: " << filename << std::endl;
+            return;
+        }
 
-                insertNonFull(this->root, product); // Insere no nó apropriado
+        std::string line;
+        while (std::getline(file, line))
+        {
+            // Localizar as chaves '{' e '}'
+            size_t start = line.find("{");
+            size_t end = line.find("}");
+            if (start == std::string::npos || end == std::string::npos || end <= start)
+            {
+                std::cerr << "Linha inválida ignorada: " << line << std::endl;
+                continue;
+            }
+
+            // Extrair o conteúdo entre as chaves
+            std::string content = line.substr(start + 1, end - start - 1);
+            std::stringstream ss(content);
+
+            // Extrair os campos separados por vírgula
+            std::string idStr, name, stockStr;
+            if (!std::getline(ss, idStr, ',') || !std::getline(ss, name, ',') || !std::getline(ss, stockStr, ','))
+            {
+                std::cerr << "Erro ao processar linha: " << line << std::endl;
+                continue;
+            }
+
+            // Limpar espaços em branco extras e aspas
+            idStr.erase(0, idStr.find_first_not_of(" \t"));
+            name.erase(0, name.find_first_not_of(" \t\""));
+            name.erase(name.find_last_not_of(" \t\"") + 1);
+            stockStr.erase(0, stockStr.find_first_not_of(" \t"));
+
+            try
+            {
+                // Converter os valores para os tipos apropriados
+                int id = std::stoi(idStr);
+                int stock = std::stoi(stockStr);
+
+                // Criar o produto e insere na árvore
+                Node::Product product(id, name, stock);
+                this->insert(product);
+
+                std::cout << "Produto inserido: ID = " << id
+                          << ", Nome = " << name
+                          << ", Estoque = " << stock << std::endl;
+            }
+            catch (const std::exception &e)
+            {
+                std::cerr << "Erro ao converter dados: " << line << ". Detalhes: " << e.what() << std::endl;
             }
         }
 
-         /**
-         * @brief Método que insere um produto em um nó que não está cheio
-         * @param node Ponteiro para o nó onde o produto será inserido
-         */
+        file.close();
+        std::cout << "Produtos carregados com sucesso do arquivo: " << filename << std::endl;
+    }
 
-        void insertNonFull(Node* node, Node::Product product) {
-            int i = node->products.size() - 1;
+    /**
+     * @brief Método que insere um nó na árvore
+     * @param node Nó a ser inserido
+     */
+    void insert(Node::Product product)
+    {
+        if (this->root == nullptr)
+        { // Se a árvore estiver vazia, cria a raiz
+            this->root = new Node(product, this->order);
+        }
+        else
+        {
+            if (this->root->products.size() == this->root->MAX_PRODUCTS)
+            { // Se a raiz estiver cheia, cria uma nova raiz e realiza o split
+                Node *newRoot = new Node(this->root->products[this->root->order - 1], this->order);
+                newRoot->children[0] = this->root;
+                split(newRoot, 0);
+                this->root = newRoot;
+            }
 
-            if (node->children.empty()) {
-                // Insere na folha e mantém a ordem
-                node->products.push_back(product);
-                while (i >= 0 && node->products[i].id > product.id) {
-                    std::swap(node->products[i + 1], node->products[i]);
-                    i--;
-                }
-            } else {
-                // Encontra o filho apropriado
-                while (i >= 0 && node->products[i].id > product.id) {
-                    i--;
-                }
-                i++;
+            insertNonFull(this->root, product); // Insere no nó apropriado
+        }
+    }
 
-                // Verifica se o filho está cheio
-                if (node->children[i]->products.size() == node->MAX_PRODUCTS) {
-                    split(node, i);
-                    if (node->products[i].id < product.id) {
-                        i++;
-                    }
-                }
-                insertNonFull(node->children[i], product);
+    /**
+     * @brief Método que insere um produto em um nó que não está cheio
+     * @param node Ponteiro para o nó onde o produto será inserido
+     */
+
+    void insertNonFull(Node *node, Node::Product product)
+    {
+        int i = node->products.size() - 1;
+
+        if (node->children.empty())
+        {
+            // Insere na folha e mantém a ordem
+            node->products.push_back(product);
+            while (i >= 0 && node->products[i].id > product.id)
+            {
+                std::swap(node->products[i + 1], node->products[i]);
+                i--;
             }
         }
+        else
+        {
+            // Encontra o filho apropriado
+            while (i >= 0 && node->products[i].id > product.id)
+            {
+                i--;
+            }
+            i++;
+
+            // Verifica se o filho está cheio
+            if (node->children[i]->products.size() == node->MAX_PRODUCTS)
+            {
+                split(node, i);
+                if (node->products[i].id < product.id)
+                {
+                    i++;
+                }
+            }
+            insertNonFull(node->children[i], product);
+        }
+    }
 
     /**
      * @brief Método que busca um nó na árvore
@@ -332,8 +411,7 @@ private:
      * @param node Nó a se realizar a busca
      * @param id Identificador do produto a ser buscado
      */
-    Node::Product *
-    searchRecursive(Node *node, int id)
+    Node::Product *searchRecursive(Node *node, int id)
     {
 
         if (node == nullptr)
@@ -364,30 +442,27 @@ private:
     }
 
     /**
-     * @brief Método que insere um produto na árvore de forma recursiva
-     * @param node Nó a ser inserido o produto
-     * @param product Produto a ser inserido
+     * @brief Método que divide um nó
+     * @param node Nó a ser dividido
+     * @param index Índice do produto a ser promovido
      */
-    void insertRecursive(Node *node, Node::Product product);
-
-        /**
-         * @brief Método que divide um nó
-         * @param node Nó a ser dividido
-         * @param index Índice do produto a ser promovido
-         */
-        void split(Node* node, int index) {
-        Node* child = node->children[index];
-        Node* newChild = new Node(child->products[order], order);
+    void split(Node *node, int index)
+    {
+        Node *child = node->children[index];
+        Node *newChild = new Node(child->products[order], order);
 
         // Transfere metade das chaves
-        for (int i = order; i < child->products.size(); i++) {
+        for (int i = order; i < child->products.size(); i++)
+        {
             newChild->products.push_back(child->products[i]);
         }
         child->products.resize(order - 1);
 
         // Transfere filhos, se existirem
-        if (!child->children.empty()) {
-            for (int i = order; i <= child->children.size(); i++) {
+        if (!child->children.empty())
+        {
+            for (int i = order; i <= child->children.size(); i++)
+            {
                 newChild->children.push_back(child->children[i]);
             }
             child->children.resize(order);
@@ -396,8 +471,7 @@ private:
         // Ajusta no nó pai
         node->children.insert(node->children.begin() + index + 1, newChild);
         node->products.insert(node->products.begin() + index, child->products[order - 1]);
-        }
-
+    }
 };
 
 #endif
