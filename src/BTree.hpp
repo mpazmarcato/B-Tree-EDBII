@@ -2,6 +2,10 @@
 #define BTREE_HPP
 
 #include "Node.hpp"
+#include <fstream>
+#include <sstream>
+#include <iostream>
+
 
 /**
  * @class Classe BTree
@@ -98,6 +102,62 @@ class BTree {
          */
         void *remove(int id);
 
+
+        void loadFromFile(const std::string& filename) {
+            std::ifstream file(filename);
+            if (!file.is_open()) {
+                std::cerr << "Erro ao abrir o arquivo: " << filename << std::endl;
+                return;
+            }
+
+            std::string line;
+            while (std::getline(file, line)) {
+                // Localizar as chaves '{' e '}'
+                size_t start = line.find("{");
+                size_t end = line.find("}");
+                if (start == std::string::npos || end == std::string::npos || end <= start) {
+                    std::cerr << "Linha inválida ignorada: " << line << std::endl;
+                    continue;
+                }
+
+                // Extrair o conteúdo entre as chaves
+                std::string content = line.substr(start + 1, end - start - 1);
+                std::stringstream ss(content);
+
+                // Extrair os campos separados por vírgula
+                std::string idStr, name, stockStr;
+                if (!std::getline(ss, idStr, ',') || !std::getline(ss, name, ',') || !std::getline(ss, stockStr, ',')) {
+                    std::cerr << "Erro ao processar linha: " << line << std::endl;
+                    continue;
+                }
+
+                // Limpar espaços em branco extras e aspas
+                idStr.erase(0, idStr.find_first_not_of(" \t"));
+                name.erase(0, name.find_first_not_of(" \t\""));
+                name.erase(name.find_last_not_of(" \t\"") + 1);
+                stockStr.erase(0, stockStr.find_first_not_of(" \t"));
+
+                try {
+                    // Converter os valores para os tipos apropriados
+                    int id = std::stoi(idStr);
+                    int stock = std::stoi(stockStr);
+
+                    // Criar o produto e insere na árvore
+                    Node::Product product(id, name, stock);
+                    this->insert(product);
+
+                    std::cout << "Produto inserido: ID = " << id
+                            << ", Nome = " << name
+                            << ", Estoque = " << stock << std::endl;
+                } catch (const std::exception& e) {
+                    std::cerr << "Erro ao converter dados: " << line << ". Detalhes: " << e.what() << std::endl;
+                }
+            }
+
+            file.close();
+            std::cout << "Produtos carregados com sucesso do arquivo: " << filename << std::endl;
+        }
+
     private: 
         
         /**
@@ -154,6 +214,7 @@ class BTree {
         node->products.insert(node->products.begin() + index, child->products[order - 1]);
         }
 
+    
 };
 
 #endif
