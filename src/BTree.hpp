@@ -113,8 +113,8 @@ public:
         {
             if (this->root->products.size() == this->root->MAX_PRODUCTS)
             { // Se a raiz estiver cheia, cria uma nova raiz e realiza o split
-                Node *newRoot = new Node(this->root->products[this->root->order - 1], this->order);
-                newRoot->children[0] = this->root;
+                Node *newRoot = new Node(this->order);
+                newRoot->children.push_back(this->root);
                 split(newRoot, 0);
                 this->root = newRoot;
             }
@@ -446,31 +446,106 @@ private:
      * @param node Nó a ser dividido
      * @param index Índice do produto a ser promovido
      */
-    void split(Node *node, int index)
+    void split(Node *parent, int index)
     {
-        Node *child = node->children[index];
-        Node *newChild = new Node(child->products[order], order);
+        // Node *child = node->children[index];
+        // Node *newChild = new Node(order);
 
-        // Transfere metade das chaves
-        for (int i = order; i < child->products.size(); i++)
+        // // // Transfere metade das chaves
+        // // for (int i = order; i < child->products.size(); i++)
+        // // {
+        // //     newChild->products.push_back(child->products[i]);
+        // // }
+        // // child->products.resize(order - 1);
+
+        // // Transfere filhos, se existirem
+        // if (!child->isLeaf()) // !child->children.empty()
+        // {
+        //     for (int i = order; i < child->children.size(); i++)
+        //     {
+        //         newChild->children.push_back(child->children[i]);
+        //     }
+        //     child->children.resize(order);
+        // }
+
+        // // Ajusta no nó pai
+        // node->children.insert(node->children.begin() + index + 1, newChild);
+        // node->products.insert(node->products.begin() + index, child->products[order / 2]);
+        // eraseProduct(child, child->products[order / 2]);
+        std::cout << "Dividindo o filho no índice: " << index << std::endl;
+
+        // Verifique se o índice é válido
+        if (index < 0 || index >= parent->children.size())
         {
-            newChild->products.push_back(child->products[i]);
+            throw std::out_of_range("Índice fora do intervalo válido.");
         }
-        child->products.resize(order - 1);
 
-        // Transfere filhos, se existirem
-        if (!child->children.empty())
+        // Passo 1: Crie um novo nó z que será o irmão do filho i
+        Node *fullChild = parent->children[index];
+        if (!fullChild)
         {
-            for (int i = order; i <= child->children.size(); i++)
+            throw std::runtime_error("O filho especificado é nulo.");
+        }
+
+        Node *newChild = new Node(fullChild->order); // Cria o novo nó irmão
+        newChild->depth = fullChild->depth;
+        newChild->parent = parent;
+
+        int mid = fullChild->order - 1; // Índice da chave do meio
+
+        // Passo 2: Promova a chave do meio ao nó pai antes de alterar fullChild
+        parent->products.insert(parent->products.begin() + index, fullChild->products[mid]);
+
+        // Passo 3: Copie as últimas chaves do filho i para o novo nó z
+        for (int j = mid + 1; j < fullChild->products.size(); j++)
+        {
+            newChild->products.push_back(fullChild->products[j]);
+        }
+
+        // Passo 4: Se o filho i não for folha, copie os filhos para o novo nó z
+        if (!fullChild->children.empty())
+        {
+            for (int j = mid + 1; j < fullChild->children.size(); j++)
             {
-                newChild->children.push_back(child->children[i]);
+                newChild->children.push_back(fullChild->children[j]);
+                newChild->children.back()->parent = newChild; // Atualiza o pai dos filhos transferidos
             }
-            child->children.resize(order);
+            fullChild->children.resize(mid + 1); // Ajuste o vetor de filhos do nó cheio
         }
 
-        // Ajusta no nó pai
-        node->children.insert(node->children.begin() + index + 1, newChild);
-        node->products.insert(node->products.begin() + index, child->products[order - 1]);
+        // Passo 5: Reduza o número de chaves do filho i
+        fullChild->products.resize(mid);
+
+        // Passo 6: Insira o novo nó z como um novo filho do nó pai
+        parent->children.insert(parent->children.begin() + index + 1, newChild);
+    }
+
+public:
+    void printTree(Node *node, int level = 0)
+    {
+        if (node == nullptr)
+        {
+            return;
+        }
+
+        // Indentar para representar o nível do nó
+        std::cout << std::string(level * 2, ' ') << "Nível " << level << ": ";
+
+        // Exibe os produtos do nó
+        for (const auto &product : node->products)
+        {
+            std::cout << "[" << product.id << "]";
+        }
+        std::cout << std::endl;
+
+        // Chama recursivamente para os filhos
+        for (Node *child : node->children)
+        {
+            if (child != nullptr)
+            {
+                printTree(child, level + 1);
+            }
+        }
     }
 };
 

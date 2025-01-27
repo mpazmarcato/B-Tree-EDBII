@@ -2,26 +2,32 @@
 #include "Node.hpp"
 #include <iostream>
 
-int main() {
+int main()
+{
     std::cout << "Bem-vindo(a) ao estoque do Brasil Material de Construção!" << std::endl;
 
     int order;
     std::cout << "Digite a ordem da árvore B: ";
     std::cin >> order;
 
-    BTree* btree = new BTree(order);
+    BTree *btree = new BTree(order);
 
     // Carrega os produtos do arquivo
     std::cout << "\n--- Carregando produtos do arquivo dadosB.txt ---" << std::endl;
     btree->loadFromFile("dadosB.txt");
+    btree->printTree(btree->root);
 
     // Verificar se os produtos foram carregados corretamente
-    for (int id : {101, 102, 103, 104, 105, 150}) { // IDs de exemplo
-        Node::Product* result = btree->search(id);
-        if (result != nullptr) {
+    for (int id : {101, 102, 103, 104, 105, 150})
+    { // IDs de exemplo
+        Node::Product *result = btree->search(id);
+        if (result != nullptr)
+        {
             std::cout << "Produto encontrado: " << result->id << " - " << result->name
                       << " (Estoque: " << result->stock << ")" << std::endl;
-        } else {
+        }
+        else
+        {
             std::cout << "Erro: Produto com ID " << id << " não encontrado!" << std::endl;
         }
     }

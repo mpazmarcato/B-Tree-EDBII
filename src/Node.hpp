@@ -49,15 +49,20 @@ public:
             this->name = name;
             this->stock = stock;
         }
+
+        bool operator==(const Product &other) const
+        {
+            return this->id == other.id && this->name == other.name;
+        }
     };
 
-    int order;                              ///< Ordem da árvore
-    const int MAX_PRODUCTS = 2 * order - 1; ///< Número máximo de produtos por nó
-    const int MAX_CHILDREN = 2 * order;     ///< Número máximo de filhos por nó
-    std::vector<Product> products;          ///< Vetor de produtos
-    int depth;                              ///< Profundidade do nó na árvore
-    Node *parent;                           ///< Ponteiro para o nó pai
-    std::vector<Node *> children;           ///< Vetor de ponteiros para os filhos
+    int order;                     ///< Ordem da árvore
+    const int MAX_PRODUCTS;        ///< Número máximo de produtos por nó
+    const int MAX_CHILDREN;        ///< Número máximo de filhos por nó
+    std::vector<Product> products; ///< Vetor de produtos
+    int depth;                     ///< Profundidade do nó na árvore
+    Node *parent;                  ///< Ponteiro para o nó pai
+    std::vector<Node *> children;  ///< Vetor de ponteiros para os filhos
 
     bool isFull()
     {
@@ -68,13 +73,24 @@ public:
      * @param id Identificador do nó/ID do produto
      * @param order Ordem da árvore
      */
-    Node(Product Product, int order)
+    Node(Product Product, int order) : MAX_PRODUCTS(2 * order - 1), MAX_CHILDREN(2 * order)
     {
         this->products.push_back(Product);
         this->order = order;
         this->depth = 0;
         this->parent = nullptr;
-        this->children.resize(MAX_CHILDREN, nullptr);
+        this->children = std::vector<Node *>();
+        // this->children.resize(MAX_CHILDREN, nullptr);
+    }
+
+    Node(int order) : MAX_PRODUCTS(2 * order - 1), MAX_CHILDREN(2 * order)
+    {
+        this->products = std::vector<Node::Product>();
+        this->order = order;
+        this->depth = 0;
+        this->parent = nullptr;
+        this->children = std::vector<Node *>();
+        // this->children.resize(MAX_CHILDREN, nullptr);
     }
 
     /**
@@ -106,11 +122,6 @@ public:
     bool isLeaf()
     {
         return this->children.size() == 0;
-    }
-
-    bool isFull()
-    {
-        return products.size() == MAX_PRODUCTS;
     }
 
     bool hasMinimumElements()
