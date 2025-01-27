@@ -16,7 +16,7 @@ int main() {
     btree->loadFromFile("dadosB.txt");
 
     // Verificar se os produtos foram carregados corretamente
-    for (int id : {85,101, 102, 103, 104, 105, 150}) { // IDs de exemplo
+    for (int id : {101, 102, 103, 104, 105, 150}) { // IDs de exemplo
         Node::Product* result = btree->search(id);
         if (result != nullptr) {
             std::cout << "Produto encontrado: " << result->id << " - " << result->name
