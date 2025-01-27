@@ -35,23 +35,52 @@ class BTree {
          * @brief Método que insere um nó na árvore
          * @param node Nó a ser inserido
          */
-        void insert(Node::Product product){
-            
-            // Se a árvore estiver vazia, o nó inserido será a raiz
-            if (this->root == nullptr) {
+        void insert(Node::Product product) {
+            if (this->root == nullptr) { // Se a árvore estiver vazia, cria a raiz
                 this->root = new Node(product, this->order);
-            } else if (this->root->children.size() == 0) { // Se a raiz não tiver filhos, insere o produto na raiz
-                this->root->products.push_back(product);
-            } 
-            // else if (this->root->products.size() == this->root->MAX_PRODUCTS) {
-            //     Node *newRoot = new Node(this->root->products[this->root->order - 1], this->order);
-            //     newRoot->children.push_back(this->root);
-            //     this->root->parent = newRoot;
-            //     this->root = newRoot;
-            //     split(this->root, 0);
-            // } else {
-            //     insertRecursive(this->root, product);
-            // }
+            } else {
+                if (this->root->products.size() == this->root->MAX_PRODUCTS) { // Se a raiz estiver cheia, cria uma nova raiz e realiza o split
+                    Node* newRoot = new Node(this->root->products[this->root->order - 1], this->order);
+                    newRoot->children[0] = this->root;
+                    split(newRoot, 0);
+                    this->root = newRoot;
+                }
+
+                insertNonFull(this->root, product); // Insere no nó apropriado
+            }
+        }
+
+         /**
+         * @brief Método que insere um produto em um nó que não está cheio
+         * @param node Ponteiro para o nó onde o produto será inserido
+         */
+
+        void insertNonFull(Node* node, Node::Product product) {
+            int i = node->products.size() - 1;
+
+            if (node->children.empty()) {
+                // Insere na folha e mantém a ordem
+                node->products.push_back(product);
+                while (i >= 0 && node->products[i].id > product.id) {
+                    std::swap(node->products[i + 1], node->products[i]);
+                    i--;
+                }
+            } else {
+                // Encontra o filho apropriado
+                while (i >= 0 && node->products[i].id > product.id) {
+                    i--;
+                }
+                i++;
+
+                // Verifica se o filho está cheio
+                if (node->children[i]->products.size() == node->MAX_PRODUCTS) {
+                    split(node, i);
+                    if (node->products[i].id < product.id) {
+                        i++;
+                    }
+                }
+                insertNonFull(node->children[i], product);
+            }
         }
 
         /**
@@ -98,18 +127,32 @@ class BTree {
         }
 
         /**
-         * @brief Método que insere um produto na árvore de forma recursiva
-         * @param node Nó a ser inserido o produto
-         * @param product Produto a ser inserido
-         */
-        void insertRecursive(Node *node, Node::Product product);
-
-        /**
          * @brief Método que divide um nó
          * @param node Nó a ser dividido
          * @param index Índice do produto a ser promovido
          */
-        void split(Node *node, int index);
+        void split(Node* node, int index) {
+        Node* child = node->children[index];
+        Node* newChild = new Node(child->products[order], order);
+
+        // Transfere metade das chaves
+        for (int i = order; i < child->products.size(); i++) {
+            newChild->products.push_back(child->products[i]);
+        }
+        child->products.resize(order - 1);
+
+        // Transfere filhos, se existirem
+        if (!child->children.empty()) {
+            for (int i = order; i <= child->children.size(); i++) {
+                newChild->children.push_back(child->children[i]);
+            }
+            child->children.resize(order);
+        }
+
+        // Ajusta no nó pai
+        node->children.insert(node->children.begin() + index + 1, newChild);
+        node->products.insert(node->products.begin() + index, child->products[order - 1]);
+        }
 
 };
 

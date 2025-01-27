@@ -19,6 +19,12 @@ class Node {
             int stock;  ///< Quantidade em estoque
 
             /**
+             * @brief Construtor padrão da classe Product
+             */
+            Product() : id(0), name(""), stock(0) {}
+
+
+            /**
              * @brief Construtor da classe Product
              * @param id ID do produto
              */
@@ -51,6 +57,9 @@ class Node {
         Node *parent;  ///< Ponteiro para o nó pai
         std::vector<Node *> children;   ///< Vetor de ponteiros para os filhos
         
+        bool isFull() {
+            return products.size() == MAX_PRODUCTS;
+        }
         /**
          * @brief Construtor da classe Node/produto
          * @param id Identificador do nó/ID do produto
