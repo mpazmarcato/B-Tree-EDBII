@@ -60,6 +60,13 @@ class Node {
         bool isFull() {
             return products.size() == MAX_PRODUCTS;
         }
+
+        Node(int order) {
+            this->order = order;
+            this->depth = 0;
+            this->parent = nullptr;
+            this->children.resize(2 * order, nullptr);
+        }
         /**
          * @brief Construtor da classe Node/produto
          * @param id Identificador do nó/ID do produto

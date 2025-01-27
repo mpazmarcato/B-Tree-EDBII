@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 
 
 /**
@@ -59,30 +60,38 @@ class BTree {
          * @param node Ponteiro para o nó onde o produto será inserido
          */
 
-        void insertNonFull(Node* node, Node::Product product) {
+       void insertNonFull(Node* node, Node::Product product) {
             int i = node->products.size() - 1;
 
             if (node->children.empty()) {
-                // Insere na folha e mantém a ordem
+                // Insere na folha e ordena
                 node->products.push_back(product);
-                while (i >= 0 && node->products[i].id > product.id) {
-                    std::swap(node->products[i + 1], node->products[i]);
-                    i--;
-                }
+                std::sort(node->products.begin(), node->products.end(), [](const Node::Product& a, const Node::Product& b) {
+                    return a.id < b.id;
+                });
+                std::cout << "Produto inserido na folha. Total de produtos no nó: " << node->products.size() << std::endl;
             } else {
                 // Encontra o filho apropriado
-                while (i >= 0 && node->products[i].id > product.id) {
+                while (i >= 0 && product.id < node->products[i].id) {
                     i--;
                 }
                 i++;
 
+                // Inicializa o filho, se necessário
+                if (node->children[i] == nullptr) {
+                    node->children[i] = new Node(node->order);
+                    node->children[i]->parent = node; // Atualiza o pai
+                }
+
                 // Verifica se o filho está cheio
-                if (node->children[i]->products.size() == node->MAX_PRODUCTS) {
+                if (node->children[i]->isFull()) {
                     split(node, i);
-                    if (node->products[i].id < product.id) {
+                    if (product.id > node->products[i].id) {
                         i++;
                     }
                 }
+
+                // Insere recursivamente no filho apropriado
                 insertNonFull(node->children[i], product);
             }
         }
@@ -191,29 +200,40 @@ class BTree {
          * @param node Nó a ser dividido
          * @param index Índice do produto a ser promovido
          */
-        void split(Node* node, int index) {
-        Node* child = node->children[index];
-        Node* newChild = new Node(child->products[order], order);
+        void split(Node* parent, int index) {
+            std::cout << "Dividindo o nó no índice: " << index << std::endl;
 
-        // Transfere metade das chaves
-        for (int i = order; i < child->products.size(); i++) {
-            newChild->products.push_back(child->products[i]);
-        }
-        child->products.resize(order - 1);
+            Node* fullChild = parent->children[index];
+            int mid = order - 1;
 
-        // Transfere filhos, se existirem
-        if (!child->children.empty()) {
-            for (int i = order; i <= child->children.size(); i++) {
-                newChild->children.push_back(child->children[i]);
+            // Cria o novo nó para as chaves maiores
+            Node* newChild = new Node(order);
+            newChild->depth = fullChild->depth;
+            newChild->parent = parent; // Define o pai do novo nó
+
+            // Transfere metade das chaves para o novo nó
+            for (int j = mid + 1; j < fullChild->products.size(); j++) {
+                newChild->products.push_back(fullChild->products[j]);
             }
-            child->children.resize(order);
-        }
+            fullChild->products.resize(mid);
 
-        // Ajusta no nó pai
-        node->children.insert(node->children.begin() + index + 1, newChild);
-        node->products.insert(node->products.begin() + index, child->products[order - 1]);
-        }
+            // Transfere os filhos, se não for folha
+            if (!fullChild->children.empty()) {
+                for (int j = mid + 1; j <= fullChild->children.size(); j++) {
+                    if (fullChild->children[j] != nullptr) {
+                        newChild->children.push_back(fullChild->children[j]);
+                        newChild->children.back()->parent = newChild; // Atualiza o pai dos filhos transferidos
+                    }
+                }
+                fullChild->children.resize(mid + 1);
+            }
 
+            // Insere a chave do meio no nó pai
+            parent->products.insert(parent->products.begin() + index, fullChild->products[mid]);
+            parent->children.insert(parent->children.begin() + index + 1, newChild);
+
+            std::cout << "Divisão concluída com sucesso." << std::endl;
+        }
     
 };
 
