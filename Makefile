@@ -9,18 +9,36 @@ FLAGS = -std=c++17 -Wall
 SRC = src
 DIST = dist
 SOURCES = $(wildcard $(SRC)/*.cpp)
-EXE = $(DIST)/main.exe
+
+# Detecta o sistema operacional
+ifeq ($(OS),Windows_NT)
+    EXE = $(DIST)/main.exe
+    MKDIR = mkdir
+    RMDIR = rmdir /s /q
+    RM = del /s /q
+    EXEC_CMD = $(EXE)
+    CHECK_DIR = if not exist "$(DIST)" $(MKDIR) "$(DIST)"
+    CLEAN_CMD = if exist "$(DIST)" $(RMDIR) "$(DIST)"
+else
+    EXE = $(DIST)/main
+    MKDIR = mkdir -p
+    RMDIR = rm -rf
+    RM = rm -f
+    EXEC_CMD = ./$(EXE)
+    CHECK_DIR = if [ ! -d "$(DIST)" ]; then $(MKDIR) "$(DIST)"; fi
+    CLEAN_CMD = if [ -d "$(DIST)" ]; then $(RMDIR) "$(DIST)"; fi
+endif
 
 all: $(EXE)
 
 $(EXE): $(SOURCES)
-	@if not exist "$(DIST)" mkdir "$(DIST)"
+	@$(CHECK_DIR)
 	$(COMPILER) $(FLAGS) -o $@ $^
 
-exec: $(EXE) 
-	$(EXE) 
+exec: $(EXE)
+	@$(EXEC_CMD)
 
 clean:
-	@if exist "$(DIST)" del /s /q "$(DIST)\*" 
+	@$(CLEAN_CMD)
 
 .PHONY: all exec clean
