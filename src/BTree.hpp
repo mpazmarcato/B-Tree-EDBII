@@ -36,12 +36,92 @@ public:
         delete root;
     }
 
-    void loadFromFile(const std::string &filename)
+    /**
+     * @brief Imprime a árvore B em níveis.
+     */
+    void printLevel(Node *node, int level = 0)
+    {
+        if (node == nullptr)
+        {
+            return;
+        }
+
+        // Indentar para representar o nível do nó
+        std::cout << std::string(level * 2, ' ') << "Nível " << level << ": ";
+
+        // Exibe os produtos do nó
+        for (const auto &product : node->products)
+        {
+            std::cout << "[" << product.id << "]";
+        }
+        std::cout << std::endl;
+
+        // Chama recursivamente para os filhos
+        for (Node *child : node->children)
+        {
+            if (child != nullptr)
+            {
+                printLevel(child, level + 1);
+            }
+        }
+    }
+
+    // // Se a árvore estiver vazia, não há nada para imprimir
+    // if (!root)
+    //     return;
+
+    // std::queue<Node *> queue;
+    // queue.push(root); // Começa pela raiz
+    // int level = 0;
+
+    // while (!queue.empty())
+    // {
+    //     int levelSize = queue.size();
+    //     std::cout << "Nível " << level << ": ";
+
+    //     // Processa todos os nós no nível atual
+    //     for (int i = 0; i < levelSize; i++)
+    //     {
+    //         Node *currentNode = queue.front();
+    //         queue.pop();
+
+    //         // Imprime os IDs do nó atual entre colchetes
+    //         std::cout << "[";
+    //         for (int j = 0; j < currentNode->products.size(); j++)
+    //         {
+    //             std::cout << currentNode->products[j].id; // Imprime o ID
+    //             if (j < currentNode->products.size() - 1)
+    //             {
+    //                 std::cout << ", "; // Separa os IDs por vírgula
+    //             }
+    //         }
+    //         std::cout << "] ";
+
+    //         // Adiciona os filhos do nó atual à fila para processamento no próximo nível
+    //         for (Node *child : currentNode->children)
+    //         {
+    //             if (child != nullptr)
+    //             {
+    //                 queue.push(child);
+    //             }
+    //         }
+    //     }
+
+    //     std::cout << "\n"; // Quebra de linha para separar os níveis
+    //     level++;
+    // }
+
+    /**
+     * @brief Carrega todos os produtos de um arquivo dentro da árvore.
+     * @param filename Caminho do arquivo.
+     */
+    void
+    loadFromFile(const std::string &filename)
     {
         std::ifstream file(filename);
         if (!file.is_open())
         {
-            std::cerr << "Erro ao abrir o arquivo: " << filename << std::endl;
+            std::cerr << "Erro ao abrir o arquivo: " << filename << "\n";
             return;
         }
 
@@ -53,7 +133,7 @@ public:
             size_t end = line.find("}");
             if (start == std::string::npos || end == std::string::npos || end <= start)
             {
-                std::cerr << "Linha inválida ignorada: " << line << std::endl;
+                std::cerr << "Linha inválida ignorada: " << line << "\n";
                 continue;
             }
 
@@ -65,7 +145,7 @@ public:
             std::string idStr, name, stockStr;
             if (!std::getline(ss, idStr, ',') || !std::getline(ss, name, ',') || !std::getline(ss, stockStr, ','))
             {
-                std::cerr << "Erro ao processar linha: " << line << std::endl;
+                std::cerr << "Erro ao processar linha: " << line << "\n";
                 continue;
             }
 
@@ -77,26 +157,21 @@ public:
 
             try
             {
-                // Converter os valores para os tipos apropriados
+                // Converte os valores para os tipos apropriados
                 int id = std::stoi(idStr);
                 int stock = std::stoi(stockStr);
 
-                // Criar o produto e insere na árvore
+                // Cria o produto e insere na árvore
                 Node::Product product(id, name, stock);
                 this->insert(product);
-
-                std::cout << "Produto inserido: ID = " << id
-                          << ", Nome = " << name
-                          << ", Estoque = " << stock << std::endl;
             }
             catch (const std::exception &e)
             {
-                std::cerr << "Erro ao converter dados: " << line << ". Detalhes: " << e.what() << std::endl;
+                std::cerr << "Erro ao converter dados: " << line << "! Detalhes: " << e.what() << "\n";
             }
         }
 
         file.close();
-        std::cout << "Produtos carregados com sucesso do arquivo: " << filename << std::endl;
     }
 
     /**
@@ -121,47 +196,10 @@ public:
 
             insertNonFull(this->root, product); // Insere no nó apropriado
         }
-    }
 
-    /**
-     * @brief Método que insere um produto em um nó que não está cheio
-     * @param node Ponteiro para o nó onde o produto será inserido
-     */
-
-    void insertNonFull(Node *node, Node::Product product)
-    {
-        int i = node->products.size() - 1;
-
-        if (node->children.empty())
-        {
-            // Insere na folha e mantém a ordem
-            node->products.push_back(product);
-            while (i >= 0 && node->products[i].id > product.id)
-            {
-                std::swap(node->products[i + 1], node->products[i]);
-                i--;
-            }
-        }
-        else
-        {
-            // Encontra o filho apropriado
-            while (i >= 0 && node->products[i].id > product.id)
-            {
-                i--;
-            }
-            i++;
-
-            // Verifica se o filho está cheio
-            if (node->children[i]->products.size() == node->MAX_PRODUCTS)
-            {
-                split(node, i);
-                if (node->products[i].id < product.id)
-                {
-                    i++;
-                }
-            }
-            insertNonFull(node->children[i], product);
-        }
+        std::cout << "Produto inserido: ID = " << product.id
+                  << ", Nome = " << product.name
+                  << ", Estoque = " << product.stock << "\n";
     }
 
     /**
@@ -174,12 +212,23 @@ public:
         return searchRecursive(this->root, id);
     }
 
+    /**
+     * @brief Método que remove um produto na árvore com base em uma chave/produto
+     * @param id Id do produto/chave
+     */
     void remove(int id)
     {
         removeRecursive(id, this->root);
     }
 
 private:
+    /**
+     * @brief Remove, de forma recursiva, um produto de um nó.
+     * @param id Id do produto a ser removido.
+     * @param root Nó onde será feita a busca.
+     * @details Por ser um algoritmo recursivo, caso não seja encontrado o produto naquele nó específico,
+     * o método será chamado novamente mas em um nó filho.
+     */
     void removeRecursive(int id, Node *root)
     {
         int productIndex = 0;
@@ -191,10 +240,12 @@ private:
         // Encontrou o produto
         if (productIndex < root->products.size() && root->products.at(productIndex).id == id)
         {
+            // Caso mais simples
             if (root->isLeaf())
             {
                 removeLeaf(productIndex, root);
             }
+            // Caso onde há a necessidade de "descer" o produto encontrado até uma folha
             else
             {
                 removeNonLeaf(productIndex, root);
@@ -206,6 +257,7 @@ private:
             // Não tem mais filhos onde buscar.
             if (root->isLeaf())
             {
+                std::cout << "Produto com ID " << id << " não encontrado!\n";
                 return;
             }
 
@@ -298,19 +350,29 @@ private:
     }
 
     /**
-     * @brief Método auxiliar que apaga uma chave no nó
+     * @brief Método auxiliar que apaga uma chave no nó.
+     * @param productIndex Índice da chave/produto no nó.
+     * @param node Ponteiro para o nó.
      */
     void removeLeaf(int productIndex, Node *node)
     {
         node->products.erase(node->products.begin() + productIndex);
     }
 
+    /**
+     * @brief Método auxiliar que apaga uma chave de um nó que não é folha.
+     * @param productIndex Índice da chave/produto no nó.
+     * @param node Ponteiro para o nó.
+     * @details Esse método rebaixa um produto para outro nó, trocando-o com outro produto,
+     * OU concatena dois nós em um. Após isso, em todos os casos, chama o método da remoção recursiva,
+     * aplicando a remoção no nó em que se encontra o produto a ser removido.
+     */
     void removeNonLeaf(int productIndex, Node *node)
     {
         Node::Product product = node->products.at(productIndex);
 
         // Determina se vai trocar com o antecessor ou sucessor do elemento
-        if (node->children[productIndex]->products.size() >= order - 1)
+        if (node->children[productIndex]->products.size() >= order - 1) // Antecessor
         {
             // Primeiro busca pelo anterior,
             // Depois substitui no lugar do antigo,
@@ -319,7 +381,7 @@ private:
             node->products.at(productIndex) = predecessor;
             removeRecursive(predecessor.id, node->children[productIndex]);
         }
-        else if (node->children[productIndex + 1]->products.size() >= order - 1)
+        else if (node->children[productIndex + 1]->products.size() >= order - 1) // Sucessor
         {
             // Análogo ao processo acima.
             Node::Product successor = node->children[productIndex + 1]->products.front();
@@ -334,8 +396,16 @@ private:
         }
     }
 
+    /**
+     * @brief Método que faz a concatenação entre nós.
+     * @param index Índice do elemento "pai" entre nós.
+     * @param root Nó principal e pai dos nós a serem concatenados.
+     */
     void concatenate(int index, Node *root)
     {
+        if (root->isLeaf())
+            return;
+
         // Child será o novo nó gerado a partir da concatenação entre ele e o irmão.
         // Não há necessidade de criar um novo nó literalmente, é possível utilizar um já existente.
         Node *child = root->children[index];
@@ -407,84 +477,89 @@ private:
     }
 
     /**
-     * @brief Método que divide um nó
+     * @brief Método que insere um produto em um nó que não está cheio
+     * @param node Ponteiro para o nó onde o produto será inserido
+     */
+    void insertNonFull(Node *node, Node::Product product)
+    {
+        int i = node->products.size() - 1;
+
+        if (node->children.empty())
+        {
+            // Insere na folha e mantém a ordem
+            node->products.push_back(product);
+            while (i >= 0 && node->products[i].id > product.id)
+            {
+                std::swap(node->products[i + 1], node->products[i]);
+                i--;
+            }
+        }
+        else
+        {
+            // Encontra o filho apropriado
+            while (i >= 0 && node->products[i].id > product.id)
+                i--;
+
+            i++;
+
+            // Verifica se o filho está cheio
+            if (node->children[i]->products.size() == node->MAX_PRODUCTS)
+            {
+                split(node, i);
+                if (node->products[i].id < product.id)
+                    i++;
+            }
+            insertNonFull(node->children[i], product);
+        }
+    }
+
+    /**
+     * @brief Método que divide um nó afim de manter o balanceamento
      * @param node Nó a ser dividido
      * @param index Índice do produto a ser promovido
      */
     void split(Node *parent, int index)
     {
-        // Verifique se o índice é válido
+        // Verifica se o índice é válido
         if (index < 0 || index >= parent->children.size())
-        {
             return;
-        }
 
-        // Passo 1: Crie um novo nó z que será o irmão do filho i
+        // Cria um novo nó dentro do pai que é irmão do nó atual.
         Node *fullChild = parent->children[index];
         if (!fullChild)
         {
-            throw std::runtime_error("O filho especificado é nulo.");
+            std::cout << "O filho com o índice" << index << "não existe!\n";
+            return;
         }
-
-        Node *newChild = new Node(fullChild->order); // Cria o novo nó irmão
-        newChild->parent = parent;
+        Node *newChild = new Node(fullChild->order);
 
         int mid = fullChild->order - 1; // Índice da chave do meio
 
-        // Passo 2: Promova a chave do meio ao nó pai antes de alterar fullChild
+        // Promove a chave do meio ao nó pai antes de alterar fullChild
         parent->products.insert(parent->products.begin() + index, fullChild->products[mid]);
 
-        // Passo 3: Copie as últimas chaves do filho i para o novo nó z
+        // Copie as últimas chaves do filho atual para o novo nó
         for (int j = mid + 1; j < fullChild->products.size(); j++)
         {
             newChild->products.push_back(fullChild->products[j]);
         }
 
-        // Passo 4: Se o filho i não for folha, copie os filhos para o novo nó z
-        if (!fullChild->children.empty())
+        // Se o filho atual não for folha, copie os filhos para o novo nó
+        if (!fullChild->isLeaf())
         {
             for (int j = mid + 1; j < fullChild->children.size(); j++)
             {
                 newChild->children.push_back(fullChild->children[j]);
-                newChild->children.back()->parent = newChild; // Atualiza o pai dos filhos transferidos
+                // newChild->children.back()->parent = newChild; // Atualiza o pai dos filhos transferidos
             }
             fullChild->children.resize(mid + 1); // Ajuste o vetor de filhos do nó cheio
         }
 
-        // Passo 5: Reduza o número de chaves do filho i
+        // Agora que o filho atual teve suas chaves transferidas, basta reduzir para adequar o tamanho atual.
         fullChild->products.resize(mid);
 
-        // Passo 6: Insira o novo nó z como um novo filho do nó pai
+        // Inserir o novo nó como um novo filho do nó pai
         parent->children.insert(parent->children.begin() + index + 1, newChild);
-    }
-
-    // FIXME: temporário
-public:
-    void printTree(Node *node, int level = 0)
-    {
-        if (node == nullptr)
-        {
-            return;
-        }
-
-        // Indentar para representar o nível do nó
-        std::cout << std::string(level * 2, ' ') << "Nível " << level << ": ";
-
-        // Exibe os produtos do nó
-        for (const auto &product : node->products)
-        {
-            std::cout << "[" << product.id << "]";
-        }
-        std::cout << std::endl;
-
-        // Chama recursivamente para os filhos
-        for (Node *child : node->children)
-        {
-            if (child != nullptr)
-            {
-                printTree(child, level + 1);
-            }
-        }
     }
 };
 

@@ -60,7 +60,6 @@ public:
     int MAX_PRODUCTS;              ///< Número máximo de produtos por nó
     int MAX_CHILDREN;              ///< Número máximo de filhos por nó
     std::vector<Product> products; ///< Vetor de produtos
-    Node *parent;                  ///< Ponteiro para o nó pai
     std::vector<Node *> children;  ///< Vetor de ponteiros para os filhos
 
     bool isFull()
@@ -77,9 +76,7 @@ public:
         MAX_PRODUCTS = 2 * order - 1;
         MAX_CHILDREN = 2 * order;
         this->order = order;
-        this->parent = nullptr;
         this->children = std::vector<Node *>();
-        // this->children.resize(MAX_CHILDREN, nullptr);
     }
 
     Node(int order)
@@ -88,9 +85,7 @@ public:
         MAX_CHILDREN = 2 * order;
         this->products = std::vector<Node::Product>();
         this->order = order;
-        this->parent = nullptr;
         this->children = std::vector<Node *>();
-        // this->children.resize(MAX_CHILDREN, nullptr);
     }
 
     /**
@@ -107,7 +102,6 @@ public:
     bool hasMinimumElements()
     {
         return this->products.size() >= order - 1;
-        // return this->products.size() >= MIN_CHILDREN;
     }
 };
 
