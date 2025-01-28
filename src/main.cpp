@@ -17,19 +17,14 @@ int main()
     btree->loadFromFile("dadosB.txt");
     btree->printTree(btree->root);
 
-    // Verificar se os produtos foram carregados corretamente
-    for (int id : {101, 102, 103, 104, 105, 150})
-    { // IDs de exemplo
-        Node::Product *result = btree->search(id);
-        if (result != nullptr)
-        {
-            std::cout << "Produto encontrado: " << result->id << " - " << result->name
-                      << " (Estoque: " << result->stock << ")" << std::endl;
-        }
-        else
-        {
-            std::cout << "Erro: Produto com ID " << id << " não encontrado!" << std::endl;
-        }
+    int id = -1;
+    while (id != 0)
+    {
+        std::cout << "Insira um ID de produto que deseja eliminar: ";
+        std::cin >> id;
+        btree->remove(id);
+        std::cout << "Removido produto com ID " << id << "!\n";
+        btree->printTree(btree->root);
     }
 
     // Finalizar
