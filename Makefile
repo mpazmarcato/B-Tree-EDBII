@@ -7,26 +7,25 @@ COMPILER = g++
 FLAGS = -std=c++17 -Wall -g
 
 SRC = src
-DIST = dist
 SOURCES = $(wildcard $(SRC)/*.cpp)
 
 # Detecta o sistema operacional
 ifeq ($(OS),Windows_NT)
-    EXE = $(DIST)/main.exe
+    EXE = $(SRC)/main.exe
     MKDIR = mkdir
     RMDIR = rmdir /s /q
     RM = del /s /q
     EXEC_CMD = $(EXE)
-    CHECK_DIR = if not exist "$(DIST)" $(MKDIR) "$(DIST)"
-    CLEAN_CMD = if exist "$(DIST)" $(RMDIR) "$(DIST)"
+    CHECK_DIR = if not exist "$(SRC)" $(MKDIR) "$(SRC)"
+    CLEAN_CMD = if exist "$(EXE)" $(RM) "$(EXE)"
 else
-    EXE = $(DIST)/main
+    EXE = $(SRC)/main
     MKDIR = mkdir -p
     RMDIR = rm -rf
     RM = rm -f
     EXEC_CMD = ./$(EXE)
-    CHECK_DIR = if [ ! -d "$(DIST)" ]; then $(MKDIR) "$(DIST)"; fi
-    CLEAN_CMD = if [ -d "$(DIST)" ]; then $(RMDIR) "$(DIST)"; fi
+    CHECK_DIR = if [ ! -d "$(SRC)" ]; then $(MKDIR) "$(SRC)"; fi
+    CLEAN_CMD = if [ -f "$(EXE)" ]; then $(RM) "$(EXE)"; fi
 endif
 
 all: $(EXE)

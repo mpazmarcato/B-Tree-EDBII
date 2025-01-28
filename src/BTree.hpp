@@ -180,230 +180,189 @@ public:
     }
 
 private:
-    int getNodeIndex(Node *node, Node *parent = nullptr)
+    void removeRecursive(int id, Node *root)
     {
-        if (parent == nullptr)
-            parent = node->parent;
-
-        for (int i = 0; i < parent->children.size(); i++)
+        int productIndex = 0;
+        while (productIndex < root->products.size() && root->products.at(productIndex).id < id)
         {
-            if (parent->children.at(i) == node)
+            productIndex++;
+        }
+
+        // Encontrou o produto
+        if (productIndex < root->products.size() && root->products.at(productIndex).id == id)
+        {
+            if (root->isLeaf())
             {
-                return i;
+                removeLeaf(productIndex, root);
+            }
+            else
+            {
+                removeNonLeaf(productIndex, root);
+            }
+        }
+        // Não encontrou e vai decidir se continua procurando ou não
+        else
+        {
+            // Não tem mais filhos onde buscar.
+            if (root->isLeaf())
+            {
+                return;
+            }
+
+            bool isProductOnLastChild = productIndex == root->products.size();
+
+            if (isProductOnLastChild && productIndex > root->products.size())
+                removeRecursive(id, root->children.at(productIndex - 1));
+            else
+                removeRecursive(id, root->children.at(productIndex));
+        }
+
+        // Checa se o filho respeita o balanceamento e, se não, ajusta
+        verifyBalance(productIndex, root);
+    }
+
+    void verifyBalance(int index, Node *root)
+    {
+        // Índice inválido
+        if (index < 0 || index >= root->children.size())
+        {
+            return;
+        }
+
+        if (!root->children[index]->hasMinimumElements())
+        {
+            // Redistribuição à esquerda
+            if (index != 0 && root->children[index - 1]->products.size() >= order)
+            {
+                redistribute(index, root, true);
+            }
+            // Redistribuição à direita
+            else if (index != root->products.size() && root->children[index + 1]->products.size() >= order)
+            {
+                redistribute(index, root, false);
+            }
+            // Se não, concatena
+            else
+            {
+                if (index == root->products.size())
+                    index--;
+
+                concatenate(index, root);
             }
         }
     }
 
-    Node *searchNodeWithProduct(int id, Node *currentNode = nullptr)
+    void redistribute(int index, Node *root, bool leftSibling = true)
     {
-        // Se o nó inicial não for passado, presuma que a busca inicia no começo da árvore.
-        if (currentNode == nullptr)
-        {
-            currentNode = this->root;
-        }
+        Node *child = root->children.at(index);
+        Node *sibling;
 
-        // Se a chave está contida no nó atual, retorne-o.
-        if (searchRecursive(currentNode, id) != nullptr)
+        // Se é distribuição com o irmão da esquerda,
+        // child é o nó da direita.
+        if (leftSibling)
         {
-            return currentNode;
-        }
+            sibling = root->children.at(index - 1);
 
-        // Procure em cada filho do nó atual pelo produto e, caso encontre-o, retorne-o.
-        for (int i = 0; i < currentNode->children.size(); i++)
-        {
-            auto product = searchRecursive(currentNode->children[i], id);
-            if (product != nullptr)
+            // Transfere o "pai" dos dois nós para o início do nó à direita
+            child->products.insert(child->products.begin(), root->products[index - 1]);
+
+            // Transfere o ponteiro do nó à esquerda para o nó à direita
+            if (!child->isLeaf())
             {
-                return currentNode->children[i];
+                child->children.insert(child->children.begin(), sibling->children.back());
+                sibling->children.pop_back();
             }
-        }
 
-        // Se não encontrar em nenhum filho do nó inserido, retorne nulo.
-        return nullptr;
+            // Define que o elemento "separador"/"pai" será o último elemento do nó à esquerda.
+            root->products[index - 1] = sibling->products.back();
+            sibling->products.pop_back();
+        }
+        else
+        {
+            sibling = root->children.at(index + 1);
+
+            // Transfere o "pai" dos dois nós para o final do nó à esquerda
+            child->products.push_back(root->products[index]);
+
+            // Transfere o primeiro nó do irmão para o final.
+            if (!child->isLeaf())
+            {
+                child->children.push_back(sibling->children.front());
+                sibling->children.erase(sibling->children.begin());
+            }
+
+            // Define que o elemento "separador"/"pai" será o primeiro elemento do nó à direita.
+            root->products[index] = sibling->products.front();
+            sibling->products.erase(sibling->products.begin());
+        }
     }
 
     /**
-     * @brief Método que remove uma chave do nó
+     * @brief Método auxiliar que apaga uma chave no nó
      */
-    void removeRecursive(int id, Node *root)
+    void removeLeaf(int productIndex, Node *node)
     {
-        Node *node = searchNodeWithProduct(id, root);
+        node->products.erase(node->products.begin() + productIndex);
+    }
 
-        // Se não há nó com a chave fornecida, não há o que remover.
-        if (node == nullptr)
-            return;
+    void removeNonLeaf(int productIndex, Node *node)
+    {
+        Node::Product product = node->products.at(productIndex);
 
-        Node::Product *productToDelete = searchRecursive(node, id);
-
-        if (node->isLeaf())
+        // Determina se vai trocar com o antecessor ou sucessor do elemento
+        if (node->children[productIndex]->products.size() >= order - 1)
         {
-            auto it = std::remove(node->products.begin(), node->products.end(), *productToDelete);
-            node->products.erase(it);
-
-            // Se o nó ficou desbalanceado, agora aplicamos alguma das técnicas para balancear.
-            if (!node->hasMinimumElements())
-            {
-                int nodeIndex = getNodeIndex(node);
-                // FIXME: parent não está preenchido, estou escrevendo logo a lógica pra depois cuidar no preenchimento
-                Node *leftNode = getSibling(node, nodeIndex, true);
-                Node *rightNode = getSibling(node, nodeIndex, false);
-
-                if (!leftNode && !rightNode)
-                {
-                    // TODO: throw erro
-                }
-
-                if (leftNode && leftNode->hasMoreThanMinimumProducts())
-                {
-                    redistribute(node, leftNode, node->parent, nodeIndex - 1);
-                    // nodeIndex - 1 sem problemas porque, se nodeIndex == 0, ele não tem leftNode e nem entra nesse if
-                }
-                else if (rightNode && rightNode->hasMoreThanMinimumProducts())
-                {
-                    redistribute(node, rightNode, node->parent, nodeIndex);
-                }
-                else
-                {
-                    if (leftNode)
-                        concatenate(node, leftNode, node->parent, nodeIndex - 1);
-                    else
-                        concatenate(node, rightNode, node->parent, nodeIndex);
-                }
-            }
-            // Caso 2: Se a chave foi removida e o nó e um de seus irmãos adjacentes tem menos que 2d elementos,
-            // balanceie.
-
-            // Caso 3: Se a chave foi removida e o nó e um de seus irmãos adjacentes tem 2d ou mais elementos,
-            // balanceie.
+            // Primeiro busca pelo anterior,
+            // Depois substitui no lugar do antigo,
+            // E, ao final, remove a duplicação do elemento no nó de onde foi retirado.
+            Node::Product predecessor = node->children[productIndex]->products.back();
+            node->products.at(productIndex) = predecessor;
+            removeRecursive(predecessor.id, node->children[productIndex]);
         }
-
-        // Caso 2: Se o nó não for folha, pegue o antecessor ou o sucessor e troque,
-        // depois chama a remoção.
+        else if (node->children[productIndex + 1]->products.size() >= order - 1)
+        {
+            // Análogo ao processo acima.
+            Node::Product successor = node->children[productIndex + 1]->products.front();
+            node->products.at(productIndex) = successor;
+            removeRecursive(successor.id, node->children[productIndex + 1]);
+        }
+        // Se não dá pra trocar, concatena nós e chama a remoção novamente neste nó.
         else
         {
-            Node::Product *replacement;
-            int productToDeleteIndex = node->getProductIndex(productToDelete->id);
+            concatenate(productIndex, node);
+            removeRecursive(product.id, node->children[productIndex]);
+        }
+    }
 
-            Node *childNode = nullptr;
-            // Pegar o nó com maior filhos para trocar para não haver muito desbalanceamento.
-            bool leftChildHasMoreElementsThanRight = node->children.at(productToDeleteIndex)->products.size() > node->children.at(productToDeleteIndex + 1)->products.size();
+    void concatenate(int index, Node *root)
+    {
+        // Child será o novo nó gerado a partir da concatenação entre ele e o irmão.
+        // Não há necessidade de criar um novo nó literalmente, é possível utilizar um já existente.
+        Node *child = root->children[index];
+        Node *sibling = root->children[index + 1];
 
-            if (leftChildHasMoreElementsThanRight)
+        // Adiciona o elemento "separador" dentro do novo nó
+        child->products.push_back(root->products[index]);
+
+        // Transfere todos os produtos do irmão para o novo nó
+        for (int i = 0; i < sibling->products.size(); ++i)
+        {
+            child->products.push_back(sibling->products[i]);
+        }
+
+        // Transfere também todos os ponteiros do irmão para o novo nó, caso possua
+        if (!child->isLeaf())
+        {
+            for (int i = 0; i < sibling->children.size(); ++i)
             {
-                childNode = node->children.at(productToDeleteIndex);
-                replacement = childNode->getProductWithBiggerId();
+                child->children.push_back(sibling->children[i]);
             }
-            else
-            {
-                childNode = node->children.at(productToDeleteIndex + 1);
-                replacement = childNode->getProductWithSmallerId();
-            }
-            node->replace(productToDeleteIndex, replacement);
-            childNode->replace(*replacement, productToDelete);
-
-            removeRecursive(replacement->id, childNode);
-        }
-    }
-
-    void redistribute(Node *undeflowNode, Node *siblingNode, Node *parent, int keyIndex)
-    {
-        if (!siblingNode->hasMoreThanMinimumProducts())
-        {
-            // Não tem como redistribuir mais...
-            return;
         }
 
-        // Devemos pegar o último elemento de siblingNode (ou o primeiro, caso ele seja filho à direita),
-        // e trocar de lugar com o separator.
-        // Após isso, pega o separator e joga no underflowNode.
-
-        Node::Product separator = parent->products.at(keyIndex);
-        Node::Product newSeparator;
-
-        if (siblingNode->products.back().id < separator.id)
-        {
-            newSeparator = siblingNode->products.back();
-        }
-        else if (siblingNode->products.at(0).id > separator.id)
-        {
-            newSeparator = siblingNode->products.at(0);
-        }
-
-        parent->products.at(keyIndex) = newSeparator;
-        undeflowNode->products.push_back(separator);
-    }
-
-    void concatenate(Node *nodeA, Node *nodeB, Node *parent, int keyIndex)
-    {
-        Node::Product separator = parent->products.at(keyIndex);
-
-        // NodeA e NodeB são agrupados em um novo nó, tanto seus elementos quanto suas chaves.
-        // Além disso, o separator no Parent é transferido para o novo nó, deletando-o na lista de produtos e apagando um dos childrens.
-        // O novo nó é colocado em parent->children(keyIndex)
-
-        for (auto p : nodeB->products)
-        {
-            nodeA->products.push_back(p);
-        }
-        nodeA->products.push_back(separator);
-        nodeA->sortProducts();
-
-        eraseProduct(parent, separator);
-        erasePointer(parent, keyIndex);
-        // TODO: Falta associar o "novo nó" ao pai.
-        // E também verificar se o pai teve underflow. Se tiver, deve chamar o algoritmo de novo?
-        if (!parent->hasMinimumElements())
-        {
-            // era pra chamar o concatenate tbm mas não sei como passar os parametros corretamente...
-        }
-    }
-
-    void eraseProduct(Node *node, Node::Product &product)
-    {
-        auto it = std::remove(node->products.begin(), node->products.end(), product);
-        node->products.erase(it);
-    }
-
-    void erasePointer(Node *node, int childrenIndex)
-    {
-        auto pointer = node->children.at(childrenIndex);
-        auto it = std::remove(node->children.begin(), node->children.end(), node->children.at(childrenIndex));
-        node->children.erase(it);
-        delete pointer;
-    }
-
-    Node *getSibling(Node *node, int nodeIndex, bool left = true)
-    {
-        if (node == nullptr || node->parent == nullptr)
-            return nullptr;
-
-        Node *parent = node->parent;
-        int siblingIndex = 0;
-
-        // Se o nó é o 1º, só pode ter irmão à direita.
-        if (nodeIndex == 0)
-        {
-            siblingIndex = 1;
-        }
-        // Se o nó é o último, só pode ter irmão à esquerda.
-        else if (nodeIndex == parent->children.size() - 1)
-        {
-            siblingIndex = nodeIndex - 1;
-        }
-        // Se o nó não está nos extremos, determina com base no parametro "left".
-        else
-        {
-            if (left)
-                siblingIndex = nodeIndex - 1;
-            else
-                siblingIndex = nodeIndex + 1;
-        }
-
-        // Se o índice do irmão estiver nos limites, retorna o irmão
-        if (siblingIndex >= 0 && siblingIndex < parent->children.size())
-            return parent->children.at(siblingIndex);
-
-        return nullptr; // Caso não haja irmão válido.
+        // Remove o elemento que foi inserido dentro do novo nó e está duplicado
+        root->products.erase(root->products.begin() + index);
+        // Remove o ponteiro extra sem utilidade.
+        root->children.erase(root->children.begin() + index + 1);
     }
 
     /**
@@ -413,7 +372,6 @@ private:
      */
     Node::Product *searchRecursive(Node *node, int id)
     {
-
         if (node == nullptr)
         {
             return nullptr;
@@ -426,12 +384,19 @@ private:
             }
             else if (node->products[i].id > id)
             {
-                return searchRecursive(node->children[i], id);
+                if (i < node->children.size() && node->children[i] != nullptr)
+                {
+                    return searchRecursive(node->children[i], id);
+                }
+                else
+                {
+                    return nullptr;
+                }
             }
         }
 
         // Se o id for maior que todos os ids do nó, então o nó filho do último índice é o próximo a ser visitado
-        if (node->children.size() > node->products.size())
+        if (node->children.size() > node->products.size() && node->children[node->products.size()] != nullptr)
         {
             return searchRecursive(node->children[node->products.size()], id);
         }
@@ -448,36 +413,10 @@ private:
      */
     void split(Node *parent, int index)
     {
-        // Node *child = node->children[index];
-        // Node *newChild = new Node(order);
-
-        // // // Transfere metade das chaves
-        // // for (int i = order; i < child->products.size(); i++)
-        // // {
-        // //     newChild->products.push_back(child->products[i]);
-        // // }
-        // // child->products.resize(order - 1);
-
-        // // Transfere filhos, se existirem
-        // if (!child->isLeaf()) // !child->children.empty()
-        // {
-        //     for (int i = order; i < child->children.size(); i++)
-        //     {
-        //         newChild->children.push_back(child->children[i]);
-        //     }
-        //     child->children.resize(order);
-        // }
-
-        // // Ajusta no nó pai
-        // node->children.insert(node->children.begin() + index + 1, newChild);
-        // node->products.insert(node->products.begin() + index, child->products[order / 2]);
-        // eraseProduct(child, child->products[order / 2]);
-        std::cout << "Dividindo o filho no índice: " << index << std::endl;
-
         // Verifique se o índice é válido
         if (index < 0 || index >= parent->children.size())
         {
-            throw std::out_of_range("Índice fora do intervalo válido.");
+            return;
         }
 
         // Passo 1: Crie um novo nó z que será o irmão do filho i
@@ -488,7 +427,6 @@ private:
         }
 
         Node *newChild = new Node(fullChild->order); // Cria o novo nó irmão
-        newChild->depth = fullChild->depth;
         newChild->parent = parent;
 
         int mid = fullChild->order - 1; // Índice da chave do meio
@@ -520,6 +458,7 @@ private:
         parent->children.insert(parent->children.begin() + index + 1, newChild);
     }
 
+    // FIXME: temporário
 public:
     void printTree(Node *node, int level = 0)
     {

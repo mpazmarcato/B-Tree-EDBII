@@ -57,10 +57,9 @@ public:
     };
 
     int order;                     ///< Ordem da árvore
-    const int MAX_PRODUCTS;        ///< Número máximo de produtos por nó
-    const int MAX_CHILDREN;        ///< Número máximo de filhos por nó
+    int MAX_PRODUCTS;              ///< Número máximo de produtos por nó
+    int MAX_CHILDREN;              ///< Número máximo de filhos por nó
     std::vector<Product> products; ///< Vetor de produtos
-    int depth;                     ///< Profundidade do nó na árvore
     Node *parent;                  ///< Ponteiro para o nó pai
     std::vector<Node *> children;  ///< Vetor de ponteiros para os filhos
 
@@ -73,21 +72,22 @@ public:
      * @param id Identificador do nó/ID do produto
      * @param order Ordem da árvore
      */
-    Node(Product Product, int order) : MAX_PRODUCTS(2 * order - 1), MAX_CHILDREN(2 * order)
+    Node(Product Product, int order)
     {
-        this->products.push_back(Product);
+        MAX_PRODUCTS = 2 * order - 1;
+        MAX_CHILDREN = 2 * order;
         this->order = order;
-        this->depth = 0;
         this->parent = nullptr;
         this->children = std::vector<Node *>();
         // this->children.resize(MAX_CHILDREN, nullptr);
     }
 
-    Node(int order) : MAX_PRODUCTS(2 * order - 1), MAX_CHILDREN(2 * order)
+    Node(int order)
     {
+        MAX_PRODUCTS = 2 * order - 1;
+        MAX_CHILDREN = 2 * order;
         this->products = std::vector<Node::Product>();
         this->order = order;
-        this->depth = 0;
         this->parent = nullptr;
         this->children = std::vector<Node *>();
         // this->children.resize(MAX_CHILDREN, nullptr);
@@ -99,88 +99,15 @@ public:
 
     ~Node() = default;
 
-    void sortProducts()
-    {
-        std::sort(products.begin(), products.end(), [](Node::Product p1, Node::Product p2)
-                  { return p1.id < p2.id; });
-    }
-
-    void replace(int oldProductIndex, Product *newProduct)
-    {
-        this->products.at(oldProductIndex) = *newProduct;
-    }
-
-    /// @overload
-    /// @brief
-    /// @param oldProduct
-    /// @param newProduct
-    void replace(Product oldProduct, Product *newProduct)
-    {
-        replace(this->getProductIndex(oldProduct.id), newProduct);
-    }
-
     bool isLeaf()
     {
-        return this->children.size() == 0;
+        return this->children.empty();
     }
 
     bool hasMinimumElements()
     {
-        return true;
+        return this->products.size() >= order - 1;
         // return this->products.size() >= MIN_CHILDREN;
-    }
-
-    bool hasMoreThanMinimumProducts()
-    {
-        return true;
-        // return this->products.size() > MIN_CHILDREN;
-    }
-
-    bool hasOverflowed()
-    {
-        return this->products.size() >= MAX_CHILDREN;
-    }
-
-    // FIXME: pensar em um jeito melhor de evitar essa duplicação de código pra duas funções que fazem a mesma coisa
-    Node::Product *getProductWithBiggerId()
-    {
-        Product *product = &this->products.at(0);
-        for (int i = 0; i < this->products.size(); i++)
-        {
-            if (this->products.at(i).id > product->id)
-            {
-                product = &this->products.at(i);
-            }
-        }
-
-        return product;
-    }
-
-    Node::Product *getProductWithSmallerId()
-    {
-        Product *product = &this->products.at(0);
-        for (int i = 0; i < this->products.size(); i++)
-        {
-            if (this->products.at(i).id < product->id)
-            {
-                product = &this->products.at(i);
-            }
-        }
-
-        return product;
-    }
-
-    int getProductIndex(int id)
-    {
-        for (int i = 0; i < this->products.size(); i++)
-        {
-            if (this->products.at(i).id == id)
-            {
-                return i;
-            }
-        }
-
-        return 0;
     }
 };
 
