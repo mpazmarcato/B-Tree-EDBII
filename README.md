@@ -20,12 +20,24 @@ A árvore B possui as operações básicas:
 - **Exclusão**: Remove um item da árvore com base no ID (por exemplo, `excluir o ID 140`).
 - **Visualização da Árvore**
 
-## 3. Arquivo de Dados
+## Arquivo de Dados
 
 Os dados dos itens de estoque a serem inseridos na árvore B estão disponíveis no arquivo [`./src/dadosB.txt`](./src/dadosB.txt). Este arquivo contém uma lista de itens no seguinte formato:
 
 ```text
 {ID, "Nome", Quantidade}
+```
+
+## Organização do Projeto
+
+```plaintext
+├── src
+│   ├── BTree.hpp
+│   ├── Node.hpp
+│   ├── main.cpp
+│   └── dadosB.txt
+├── Makefile
+└── README.md
 ```
 
 ## Operação de Busca
