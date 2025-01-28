@@ -44,6 +44,7 @@ Os dados dos itens de estoque a serem inseridos na árvore B estão disponíveis
 ```plaintext
 ├── src
 │   ├── BTree.hpp
+│   ├── BTree.cpp
 │   ├── Node.hpp
 │   ├── Node.cpp
 │   ├── main.cpp
