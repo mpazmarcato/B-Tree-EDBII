@@ -7,6 +7,27 @@ Projeto que guarda as implementações realizadas para o trabalho final da 2ª U
 
 ## Como compilar os arquivos
 
+## Implementação Computacional 
+
+A árvore B foi implementada para armazenar os itens de estoque, com as seguintes informações em cada nó:
+- **ID do item**: chave única (inteiro).
+- **Nome do item**: descrição (string).
+- **Quantidade em estoque**: quantidade disponível (inteiro).
+
+A árvore B possui as operações básicas:
+- **Inserção**: Adiciona um novo item no sistema de controle de estoque.
+- **Busca**: Permite buscar um item pelo ID (por exemplo, `buscar pelo ID 109` deve retornar `{109, "SSD", 30}`).
+- **Exclusão**: Remove um item da árvore com base no ID (por exemplo, `excluir o ID 140`).
+- **Visualização da Árvore**
+
+## 3. Arquivo de Dados
+
+Os dados dos itens de estoque a serem inseridos na árvore B estão disponíveis no arquivo [`./src/dadosB.txt`](./src/dadosB.txt). Este arquivo contém uma lista de itens no seguinte formato:
+
+```text
+{ID, "Nome", Quantidade}
+```
+
 ## Operação de Busca
 
 ### Ambiente computacional
