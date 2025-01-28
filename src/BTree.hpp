@@ -175,8 +175,8 @@ public:
     }
 
     /**
-     * @brief Método que insere um nó na árvore
-     * @param node Nó a ser inserido
+     * @brief Método que insere um produto na árvore
+     * @param product Produto a ser inserido
      */
     void insert(Node::Product product)
     {
@@ -186,6 +186,14 @@ public:
         }
         else
         {
+            // Verifica se existe antes de cadastrar
+            auto cloneProduct = searchRecursive(this->root, product.id);
+            if (cloneProduct)
+            {
+                std::cout << "Produto com ID " << product.id << " já existe! Não foi possível inserir.\n";
+                return;
+            }
+
             if (this->root->products.size() == this->root->MAX_PRODUCTS)
             { // Se a raiz estiver cheia, cria uma nova raiz e realiza o split
                 Node *newRoot = new Node(this->order);
