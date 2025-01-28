@@ -11,22 +11,22 @@
  */
 class Node
 {
-
 public:
     struct Product
     {
+        static int NEXT_ID; ///< Contador interno de ID
 
         int id;           ///< ID do produto
         std::string name; ///< Nome do produto
         int stock;        ///< Quantidade em estoque
 
         /**
-         * @brief Construtor padrão da classe Product
+         * @brief Construtor padrão da struct Product
          */
         Product() : id(0), name(""), stock(0) {}
 
         /**
-         * @brief Construtor da classe Product
+         * @brief Construtor da struct Product
          * @param id ID do produto
          */
         Product(int id)
@@ -34,6 +34,22 @@ public:
             this->id = id;
             this->name = "";
             this->stock = 0;
+            NEXT_ID = id + 1;
+        }
+
+        /**
+         * @overload
+         * @brief Construtor da struct Product
+         * @param name Nome do produto
+         * @param stock Quantidade em estoque
+         * @details Determina o ID de forma automática com base no último inserido
+         */
+        Product(std::string name, int stock)
+        {
+            this->id = NEXT_ID;
+            this->name = name;
+            this->stock = stock;
+            NEXT_ID = id + 1;
         }
 
         /**
@@ -48,6 +64,7 @@ public:
             this->id = id;
             this->name = name;
             this->stock = stock;
+            NEXT_ID = id + 1;
         }
 
         bool operator==(const Product &other) const
@@ -57,15 +74,9 @@ public:
     };
 
     int order;                     ///< Ordem da árvore
-    int MAX_PRODUCTS;              ///< Número máximo de produtos por nó
-    int MAX_CHILDREN;              ///< Número máximo de filhos por nó
     std::vector<Product> products; ///< Vetor de produtos
     std::vector<Node *> children;  ///< Vetor de ponteiros para os filhos
 
-    bool isFull()
-    {
-        return products.size() == MAX_PRODUCTS;
-    }
     /**
      * @brief Construtor da classe Node/produto
      * @param id Identificador do nó/ID do produto
@@ -73,16 +84,12 @@ public:
      */
     Node(Product Product, int order)
     {
-        MAX_PRODUCTS = 2 * order - 1;
-        MAX_CHILDREN = 2 * order;
         this->order = order;
         this->children = std::vector<Node *>();
     }
 
     Node(int order)
     {
-        MAX_PRODUCTS = 2 * order - 1;
-        MAX_CHILDREN = 2 * order;
         this->products = std::vector<Node::Product>();
         this->order = order;
         this->children = std::vector<Node *>();
@@ -102,6 +109,11 @@ public:
     bool hasMinimumElements()
     {
         return this->products.size() >= order - 1;
+    }
+
+    bool isFull()
+    {
+        return products.size() >= 2 * order - 1;
     }
 };
 

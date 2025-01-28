@@ -1,11 +1,22 @@
 ﻿# EDB II - 3ª Unidade
 
 ## Objetivo
-Projeto que guarda as implementações realizadas para o trabalho final da 2ª Unidade de EDB II. O projeto implementa uma Árvore B para armazenar e organizar informações de um sistema de controle de estoque. Os algoritmos foram implementados todos na linguagem C++ e estão todos documentados.
+Projeto que guarda as implementações realizadas para o trabalho final da 3ª Unidade de EDB II. O projeto implementa uma Árvore B para armazenar e organizar informações de um sistema de controle de estoque. Os algoritmos foram implementados todos na linguagem C++ e estão todos documentados.
 
 ## Demonstração
 
 ## Como compilar os arquivos
+
+### Makefile
+Na raiz do projeto, é possível digitar:
+- `make all` para compilar o projeto;
+- `make exec` para compilar e, em seguida, executar o projeto;
+- `make clean` para limpar o arquivo executável gerado.
+
+### VSCode
+Caso esteja no VSCode, há a possibilidade de executar o programa direto nele via extensões, graças à existência dos arquivos `launch.json` e `tasks.json`. Para isso, basta estar no arquivo `main.cpp`, com a `C/C++ Extension Pack` instalada e clicar no ícone de "reprodução", que se encontra na barra superior com as janelas abertas.
+
+ATENÇÃO: antes de executar o programa pelo VSCode, certifique-se de alterar a constante `filename` dentro de `main.cpp` para "dadosB.txt", ao invés de deixá-la como "src/dadosB.txt", para que o arquivo seja lido corretamente. Executando pelo Makefile tal problema não ocorre.
 
 ## Implementação Computacional 
 
@@ -18,7 +29,7 @@ A árvore B possui as operações básicas:
 - **Inserção**: Adiciona um novo item no sistema de controle de estoque.
 - **Busca**: Permite buscar um item pelo ID (por exemplo, `buscar pelo ID 109` deve retornar `{109, "SSD", 30}`).
 - **Exclusão**: Remove um item da árvore com base no ID (por exemplo, `excluir o ID 140`).
-- **Visualização da Árvore**
+- **Visualização da Árvore em Nível**
 
 ## Arquivo de Dados
 
@@ -34,6 +45,7 @@ Os dados dos itens de estoque a serem inseridos na árvore B estão disponíveis
 ├── src
 │   ├── BTree.hpp
 │   ├── Node.hpp
+│   ├── Node.cpp
 │   ├── main.cpp
 │   └── dadosB.txt
 ├── Makefile
@@ -75,9 +87,9 @@ Os dados dos itens de estoque a serem inseridos na árvore B estão disponíveis
 - RAM: 08GB
 - Editor de Texto: Visual Studio Code
 - IDE: nenhuma
-- Sistema Operacional: Windows 11 versão 23H2
-- Softwares: OverLeaf e C++
-- Compiladores: GCC 13.1
+- Sistema Operacional: Debian GNU/Linux 12 (WSL) 
+- Softwares:  C++
+- Compiladores: GCC 12.2
 
 ## Visualização e Fluxograma
 
@@ -100,4 +112,4 @@ Aqui estão listadas as principais áreas do trabalho e quem predominantemente a
 - Função de buscar: Cauã
 - Função de inserir: Victor
 - Função de remover: Andriel
-- Função de listar: Paz
+- Função de listar: Paz/Andriel
