@@ -5,6 +5,8 @@ Projeto que guarda as implementações realizadas para o trabalho final da 3ª U
 
 ## Demonstração
 
+Link do vídeo com explicação e demonstração do código: https://drive.google.com/file/d/1anFlgXEiB41V6QSJOHED-y0SwPCFCXfs/view
+
 ## Como compilar os arquivos
 
 ### Makefile
